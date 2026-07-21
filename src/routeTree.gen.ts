@@ -30,6 +30,7 @@ import { Route as AppFinanceiroContasPagarRouteImport } from './routes/app.finan
 import { Route as AppAdminOficinasRouteImport } from './routes/app.admin.oficinas'
 import { Route as AppAdminFinanceiroRouteImport } from './routes/app.admin.financeiro'
 import { Route as AppAdminContasRouteImport } from './routes/app.admin.contas'
+import { Route as AppAdminConfiguracoesRouteImport } from './routes/app.admin.configuracoes'
 import { Route as AppOrdensIdImprimirRouteImport } from './routes/app.ordens.$id.imprimir'
 import { Route as ApiPublicHooksFipeSyncRouteImport } from './routes/api/public/hooks/fipe-sync'
 
@@ -139,6 +140,11 @@ const AppAdminContasRoute = AppAdminContasRouteImport.update({
   path: '/admin/contas',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminConfiguracoesRoute = AppAdminConfiguracoesRouteImport.update({
+  id: '/admin/configuracoes',
+  path: '/admin/configuracoes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOrdensIdImprimirRoute = AppOrdensIdImprimirRouteImport.update({
   id: '/imprimir',
   path: '/imprimir',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/app/selecionar-unidade': typeof AppSelecionarUnidadeRoute
   '/app/servicos': typeof AppServicosRoute
   '/app/veiculos': typeof AppVeiculosRoute
+  '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
   '/app/admin/contas': typeof AppAdminContasRoute
   '/app/admin/financeiro': typeof AppAdminFinanceiroRoute
   '/app/admin/oficinas': typeof AppAdminOficinasRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/app/selecionar-unidade': typeof AppSelecionarUnidadeRoute
   '/app/servicos': typeof AppServicosRoute
   '/app/veiculos': typeof AppVeiculosRoute
+  '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
   '/app/admin/contas': typeof AppAdminContasRoute
   '/app/admin/financeiro': typeof AppAdminFinanceiroRoute
   '/app/admin/oficinas': typeof AppAdminOficinasRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/app/selecionar-unidade': typeof AppSelecionarUnidadeRoute
   '/app/servicos': typeof AppServicosRoute
   '/app/veiculos': typeof AppVeiculosRoute
+  '/app/admin/configuracoes': typeof AppAdminConfiguracoesRoute
   '/app/admin/contas': typeof AppAdminContasRoute
   '/app/admin/financeiro': typeof AppAdminFinanceiroRoute
   '/app/admin/oficinas': typeof AppAdminOficinasRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/app/selecionar-unidade'
     | '/app/servicos'
     | '/app/veiculos'
+    | '/app/admin/configuracoes'
     | '/app/admin/contas'
     | '/app/admin/financeiro'
     | '/app/admin/oficinas'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/app/selecionar-unidade'
     | '/app/servicos'
     | '/app/veiculos'
+    | '/app/admin/configuracoes'
     | '/app/admin/contas'
     | '/app/admin/financeiro'
     | '/app/admin/oficinas'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/app/selecionar-unidade'
     | '/app/servicos'
     | '/app/veiculos'
+    | '/app/admin/configuracoes'
     | '/app/admin/contas'
     | '/app/admin/financeiro'
     | '/app/admin/oficinas'
@@ -462,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminContasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin/configuracoes': {
+      id: '/app/admin/configuracoes'
+      path: '/admin/configuracoes'
+      fullPath: '/app/admin/configuracoes'
+      preLoaderRoute: typeof AppAdminConfiguracoesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/ordens/$id/imprimir': {
       id: '/app/ordens/$id/imprimir'
       path: '/imprimir'
@@ -527,6 +546,7 @@ interface AppRouteChildren {
   AppSelecionarUnidadeRoute: typeof AppSelecionarUnidadeRoute
   AppServicosRoute: typeof AppServicosRoute
   AppVeiculosRoute: typeof AppVeiculosRoute
+  AppAdminConfiguracoesRoute: typeof AppAdminConfiguracoesRoute
   AppAdminContasRoute: typeof AppAdminContasRoute
   AppAdminFinanceiroRoute: typeof AppAdminFinanceiroRoute
   AppAdminOficinasRoute: typeof AppAdminOficinasRoute
@@ -544,6 +564,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSelecionarUnidadeRoute: AppSelecionarUnidadeRoute,
   AppServicosRoute: AppServicosRoute,
   AppVeiculosRoute: AppVeiculosRoute,
+  AppAdminConfiguracoesRoute: AppAdminConfiguracoesRoute,
   AppAdminContasRoute: AppAdminContasRoute,
   AppAdminFinanceiroRoute: AppAdminFinanceiroRoute,
   AppAdminOficinasRoute: AppAdminOficinasRoute,
@@ -562,3 +583,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

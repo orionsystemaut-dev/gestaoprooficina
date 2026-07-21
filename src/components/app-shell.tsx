@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveUnit } from "@/hooks/use-active-unit";
 import { useTheme } from "@/hooks/use-theme";
 import { can, type Role } from "@/lib/permissions";
+import { SupportButton } from "./support-button";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     { to: "/app/admin/contas", icon: ShieldCheck, label: "Contas de usuários" },
     { to: "/app/admin/oficinas", icon: Building2, label: "Oficinas e Colaboradores" },
     { to: "/app/admin/financeiro", icon: DollarSign, label: "Financeiro do Sistema" },
+    { to: "/app/admin/configuracoes", icon: Settings, label: "Configurações Globais" },
   ] : [];
 
   async function signOut() {
@@ -201,6 +203,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 md:p-6">{children}</main>
       </div>
+      
+      <SupportButton />
     </div>
   );
 }
