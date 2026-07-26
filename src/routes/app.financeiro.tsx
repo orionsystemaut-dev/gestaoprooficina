@@ -247,6 +247,9 @@ function FinancePage() {
           <TabsList>
             <TabsTrigger value="in">Receitas ({payments.length})</TabsTrigger>
             <TabsTrigger value="out">Despesas ({contas.length})</TabsTrigger>
+            <TabsTrigger value="pending">
+              OS com pendência ({pendingRows.length}){pendingTotal > 0 ? ` · ${brl(pendingTotal)}` : ""}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="in" className="mt-4">
             <div className="rounded-xl border bg-card">
@@ -285,6 +288,49 @@ function FinancePage() {
                       </TableRow>
                     );
                   })}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+          <TabsContent value="pending" className="mt-4">
+            <div className="mb-3 text-sm text-muted-foreground">
+              Ordens de serviço concluídas com pagamento parcial ou a prazo. Total em aberto:{" "}
+              <span className="font-medium text-rose-600">{brl(pendingTotal)}</span>
+            </div>
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fechada em</TableHead>
+                    <TableHead>OS</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Pago</TableHead>
+                    <TableHead className="text-right">Saldo</TableHead>
+                    <TableHead className="w-24 text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingRows.length === 0 && (
+                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Nenhuma OS com pendência financeira.</TableCell></TableRow>
+                  )}
+                  {pendingRows.map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell>{o.data_conclusao ? new Date(o.data_conclusao).toLocaleDateString("pt-BR") : "—"}</TableCell>
+                      <TableCell>#{o.numero}</TableCell>
+                      <TableCell>{o.customers?.nome ?? "—"}</TableCell>
+                      <TableCell>{o.customers?.telefone ?? "—"}</TableCell>
+                      <TableCell className="text-right">{brl(o.total)}</TableCell>
+                      <TableCell className="text-right text-emerald-600">{brl(o.paid)}</TableCell>
+                      <TableCell className="text-right font-semibold text-rose-600">{brl(o.saldo)}</TableCell>
+                      <TableCell className="text-right">
+                        <Link to="/app/ordens/$id" params={{ id: o.id }}>
+                          <Button size="sm" variant="outline">Abrir</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
