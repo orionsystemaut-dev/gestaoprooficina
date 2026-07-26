@@ -183,8 +183,10 @@ function OrderDetail() {
       />
 
       {isClosed && (
-        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-          OS {os.status === "concluida" ? "concluída" : "cancelada"}. Você ainda pode editar dados, adicionar itens ou pagamentos — a OS volta a ficar em andamento automaticamente.
+        <div className={`mb-4 rounded-lg border px-4 py-2 text-sm ${os.status === "concluida_pendente" ? "border-rose-300 bg-rose-50 text-rose-900" : "border-amber-300 bg-amber-50 text-amber-900"}`}>
+          {os.status === "concluida_pendente"
+            ? `OS concluída com pendência financeira. Saldo em aberto: ${brl(balance)}. Registre novos pagamentos para quitar — quando totalmente paga, a OS será marcada como concluída.`
+            : `OS ${os.status === "concluida" ? "concluída" : "cancelada"}. Você ainda pode editar dados, adicionar itens ou pagamentos — a OS volta a ficar em andamento automaticamente.`}
         </div>
       )}
 
