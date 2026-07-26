@@ -31,7 +31,7 @@ function OrderRoute() {
 
 type ItemType = "servico" | "peca" | "descricao_livre";
 type Method = "dinheiro" | "pix" | "credito" | "debito" | "boleto" | "transferencia" | "outro";
-const STATUSES = ["aberta","em_andamento","aguardando_peca","aguardando_aprovacao","concluida","cancelada"] as const;
+const STATUSES = ["aberta","em_andamento","aguardando_peca","aguardando_aprovacao","concluida","concluida_pendente","cancelada"] as const;
 const METHODS: Method[] = ["dinheiro","pix","credito","debito","boleto","transferencia","outro"];
 
 interface Item {
@@ -88,11 +88,11 @@ function OrderDetail() {
   const changeStatus = useMutation({
     mutationFn: async (status: string) => {
       const payload: { status: string; data_conclusao?: string | null; fechada_por?: string | null; fechada_com_saldo?: boolean } = { status };
-      if (status === "concluida") {
+      if (status === "concluida" || status === "concluida_pendente") {
         payload.data_conclusao = new Date().toISOString();
         const { data: u } = await supabase.auth.getUser();
         payload.fechada_por = u.user?.id ?? null;
-        payload.fechada_com_saldo = balance > 0;
+        payload.fechada_com_saldo = status === "concluida_pendente" || balance > 0;
       }
       if (status === "aberta" || status === "em_andamento") {
         payload.data_conclusao = null;
@@ -106,7 +106,8 @@ function OrderDetail() {
     onSuccess: (_d, status) => {
       const label: Record<string, string> = {
         aberta: "OS reaberta", em_andamento: "OS em andamento", aguardando_peca: "Aguardando peça",
-        aguardando_aprovacao: "Aguardando aprovação", concluida: "OS fechada", cancelada: "OS cancelada",
+        aguardando_aprovacao: "Aguardando aprovação", concluida: "OS fechada",
+        concluida_pendente: "OS fechada com pendência financeira", cancelada: "OS cancelada",
       };
       toast.success(label[status] ?? "Status atualizado");
       qc.invalidateQueries({ queryKey: ["os", id] });
@@ -137,7 +138,7 @@ function OrderDetail() {
   const paid = payments.reduce((s, p) => s + Number(p.valor), 0);
   const balance = total - paid;
 
-  const isClosed = os.status === "concluida" || os.status === "cancelada";
+  const isClosed = os.status === "concluida" || os.status === "cancelada" || os.status === "concluida_pendente";
 
   function printPdf() {
     window.open(`/app/ordens/${id}/imprimir?auto=1`, "_blank");
@@ -145,8 +146,13 @@ function OrderDetail() {
 
   function fecharOS() {
     if (balance > 0) {
-      const ok = confirm(`Existe um saldo em aberto de ${brl(balance)}. Deseja fechar a OS mesmo assim? Ela será marcada como concluída com saldo pendente.`);
-      if (!ok) return;
+      const opt = window.prompt(
+        `Existe um saldo em aberto de ${brl(balance)}.\n\nDigite:\n1 - Fechar a prazo (Concluída com pendência)\n2 - Fechar mesmo assim (Concluída, com saldo pendente)\nCancelar - voltar`,
+        "1",
+      );
+      if (opt === null) return;
+      if (opt.trim() === "1") { changeStatus.mutate("concluida_pendente"); return; }
+      if (opt.trim() !== "2") return;
     }
     changeStatus.mutate("concluida");
   }
