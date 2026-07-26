@@ -517,11 +517,22 @@ function PaymentDialog({ osId, unitId, osStatus, payment, onClose, suggested }: 
       if (error) throw error;
       if (osStatus === "concluida" || osStatus === "cancelada") {
         await supabase.from("service_orders").update({ status: "em_andamento", data_conclusao: null, fechada_por: null, fechada_com_saldo: false } as never).eq("id", osId);
+      } else if (osStatus === "concluida_pendente") {
+        // If fully paid now, promote to concluida
+        const [{ data: os2 }, { data: pays }] = await Promise.all([
+          supabase.from("service_orders").select("total").eq("id", osId).single(),
+          supabase.from("os_payments").select("valor").eq("os_id", osId),
+        ]);
+        const totalOs = Number(os2?.total ?? 0);
+        const paidOs = (pays ?? []).reduce((s, p) => s + Number((p as { valor: number }).valor), 0);
+        if (totalOs > 0 && paidOs >= totalOs) {
+          await supabase.from("service_orders").update({ status: "concluida", fechada_com_saldo: false } as never).eq("id", osId);
+        }
       }
     },
     onSuccess: () => {
-      const closed = osStatus === "concluida" || osStatus === "cancelada";
-      toast.success(closed ? "Pagamento salvo — OS reaberta" : isEditing ? "Pagamento atualizado" : "Pagamento registrado");
+      const reopened = osStatus === "concluida" || osStatus === "cancelada";
+      toast.success(reopened ? "Pagamento salvo — OS reaberta" : isEditing ? "Pagamento atualizado" : "Pagamento registrado");
       onClose();
       qc.invalidateQueries({ queryKey: ["os-payments", osId] });
       qc.invalidateQueries({ queryKey: ["os", osId] });
