@@ -37,6 +37,7 @@ export const OS_STATUS: Record<string, string> = {
   aguardando_peca: "Aguardando peça",
   aguardando_aprovacao: "Aguardando aprovação",
   concluida: "Concluída",
+  concluida_pendente: "Concluída com pendência",
   cancelada: "Cancelada",
 };
 
