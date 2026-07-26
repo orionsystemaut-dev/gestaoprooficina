@@ -31,6 +31,7 @@ function todayISO(offset = 0) {
 
 type Payment = { id: string; metodo: string; valor: number; pago_em: string; observacao: string | null; service_orders: { numero: number; customers: { nome: string } | null } | null };
 type Conta = { id: string; descricao: string; categoria: string | null; fornecedor: string | null; valor: number; vencimento: string; pago_em: string | null; status: string };
+type PendingOS = { id: string; numero: number; status: string; total: number; data_conclusao: string | null; customers: { nome: string; telefone: string | null } | null; os_payments: { valor: number }[] };
 
 function FinancePage() {
   const { activeUnitId } = useActiveUnit();
@@ -79,6 +80,31 @@ function FinancePage() {
       return (data ?? []) as Conta[];
     },
   });
+
+  const { data: pendingOs = [] } = useQuery({
+    queryKey: ["fin-pending-os", activeUnitId],
+    enabled: !!activeUnitId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("service_orders")
+        .select("id, numero, status, total, data_conclusao, customers(nome, telefone), os_payments(valor)")
+        .eq("unit_id", activeUnitId!)
+        .eq("status", "concluida_pendente")
+        .order("data_conclusao", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as PendingOS[];
+    },
+  });
+
+  const pendingRows = useMemo(() => {
+    return pendingOs.map((o) => {
+      const paid = (o.os_payments ?? []).reduce((s, p) => s + Number(p.valor), 0);
+      const total = Number(o.total ?? 0);
+      return { ...o, paid, saldo: Math.max(0, total - paid) };
+    });
+  }, [pendingOs]);
+
+  const pendingTotal = pendingRows.reduce((s, r) => s + r.saldo, 0);
 
   const totals = useMemo(() => {
     const received = payments.reduce((s, p) => s + Number(p.valor), 0);
@@ -221,6 +247,9 @@ function FinancePage() {
           <TabsList>
             <TabsTrigger value="in">Receitas ({payments.length})</TabsTrigger>
             <TabsTrigger value="out">Despesas ({contas.length})</TabsTrigger>
+            <TabsTrigger value="pending">
+              OS com pendência ({pendingRows.length}){pendingTotal > 0 ? ` · ${brl(pendingTotal)}` : ""}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="in" className="mt-4">
             <div className="rounded-xl border bg-card">
@@ -259,6 +288,49 @@ function FinancePage() {
                       </TableRow>
                     );
                   })}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+          <TabsContent value="pending" className="mt-4">
+            <div className="mb-3 text-sm text-muted-foreground">
+              Ordens de serviço concluídas com pagamento parcial ou a prazo. Total em aberto:{" "}
+              <span className="font-medium text-rose-600">{brl(pendingTotal)}</span>
+            </div>
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fechada em</TableHead>
+                    <TableHead>OS</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Pago</TableHead>
+                    <TableHead className="text-right">Saldo</TableHead>
+                    <TableHead className="w-24 text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingRows.length === 0 && (
+                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Nenhuma OS com pendência financeira.</TableCell></TableRow>
+                  )}
+                  {pendingRows.map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell>{o.data_conclusao ? new Date(o.data_conclusao).toLocaleDateString("pt-BR") : "—"}</TableCell>
+                      <TableCell>#{o.numero}</TableCell>
+                      <TableCell>{o.customers?.nome ?? "—"}</TableCell>
+                      <TableCell>{o.customers?.telefone ?? "—"}</TableCell>
+                      <TableCell className="text-right">{brl(o.total)}</TableCell>
+                      <TableCell className="text-right text-emerald-600">{brl(o.paid)}</TableCell>
+                      <TableCell className="text-right font-semibold text-rose-600">{brl(o.saldo)}</TableCell>
+                      <TableCell className="text-right">
+                        <Link to="/app/ordens/$id" params={{ id: o.id }}>
+                          <Button size="sm" variant="outline">Abrir</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

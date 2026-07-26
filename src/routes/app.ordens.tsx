@@ -36,7 +36,7 @@ interface OS {
   vehicles: { placa: string | null; modelo: string | null } | null;
 }
 
-const STATUSES = ["aberta","em_andamento","aguardando_peca","aguardando_aprovacao","concluida","cancelada"] as const;
+const STATUSES = ["aberta","em_andamento","aguardando_peca","aguardando_aprovacao","concluida","concluida_pendente","cancelada"] as const;
 
 function OrdersPage() {
   const { activeUnitId } = useActiveUnit();

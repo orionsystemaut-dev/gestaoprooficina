@@ -31,7 +31,7 @@ function OrderRoute() {
 
 type ItemType = "servico" | "peca" | "descricao_livre";
 type Method = "dinheiro" | "pix" | "credito" | "debito" | "boleto" | "transferencia" | "outro";
-const STATUSES = ["aberta","em_andamento","aguardando_peca","aguardando_aprovacao","concluida","cancelada"] as const;
+const STATUSES = ["aberta","em_andamento","aguardando_peca","aguardando_aprovacao","concluida","concluida_pendente","cancelada"] as const;
 const METHODS: Method[] = ["dinheiro","pix","credito","debito","boleto","transferencia","outro"];
 
 interface Item {
@@ -88,11 +88,11 @@ function OrderDetail() {
   const changeStatus = useMutation({
     mutationFn: async (status: string) => {
       const payload: { status: string; data_conclusao?: string | null; fechada_por?: string | null; fechada_com_saldo?: boolean } = { status };
-      if (status === "concluida") {
+      if (status === "concluida" || status === "concluida_pendente") {
         payload.data_conclusao = new Date().toISOString();
         const { data: u } = await supabase.auth.getUser();
         payload.fechada_por = u.user?.id ?? null;
-        payload.fechada_com_saldo = balance > 0;
+        payload.fechada_com_saldo = status === "concluida_pendente" || balance > 0;
       }
       if (status === "aberta" || status === "em_andamento") {
         payload.data_conclusao = null;
@@ -106,7 +106,8 @@ function OrderDetail() {
     onSuccess: (_d, status) => {
       const label: Record<string, string> = {
         aberta: "OS reaberta", em_andamento: "OS em andamento", aguardando_peca: "Aguardando peça",
-        aguardando_aprovacao: "Aguardando aprovação", concluida: "OS fechada", cancelada: "OS cancelada",
+        aguardando_aprovacao: "Aguardando aprovação", concluida: "OS fechada",
+        concluida_pendente: "OS fechada com pendência financeira", cancelada: "OS cancelada",
       };
       toast.success(label[status] ?? "Status atualizado");
       qc.invalidateQueries({ queryKey: ["os", id] });
@@ -137,7 +138,7 @@ function OrderDetail() {
   const paid = payments.reduce((s, p) => s + Number(p.valor), 0);
   const balance = total - paid;
 
-  const isClosed = os.status === "concluida" || os.status === "cancelada";
+  const isClosed = os.status === "concluida" || os.status === "cancelada" || os.status === "concluida_pendente";
 
   function printPdf() {
     window.open(`/app/ordens/${id}/imprimir?auto=1`, "_blank");
@@ -145,8 +146,13 @@ function OrderDetail() {
 
   function fecharOS() {
     if (balance > 0) {
-      const ok = confirm(`Existe um saldo em aberto de ${brl(balance)}. Deseja fechar a OS mesmo assim? Ela será marcada como concluída com saldo pendente.`);
-      if (!ok) return;
+      const opt = window.prompt(
+        `Existe um saldo em aberto de ${brl(balance)}.\n\nDigite:\n1 - Fechar a prazo (Concluída com pendência)\n2 - Fechar mesmo assim (Concluída, com saldo pendente)\nCancelar - voltar`,
+        "1",
+      );
+      if (opt === null) return;
+      if (opt.trim() === "1") { changeStatus.mutate("concluida_pendente"); return; }
+      if (opt.trim() !== "2") return;
     }
     changeStatus.mutate("concluida");
   }
@@ -166,7 +172,14 @@ function OrderDetail() {
             {isClosed ? (
               <Button variant="default" onClick={() => changeStatus.mutate("em_andamento")}>Reabrir OS</Button>
             ) : (
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={fecharOS}>Fechar OS</Button>
+              <>
+                {balance > 0 && total > 0 && (
+                  <Button variant="outline" className="border-rose-500 text-rose-600 hover:bg-rose-50" onClick={() => changeStatus.mutate("concluida_pendente")}>
+                    Fechar a prazo
+                  </Button>
+                )}
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={fecharOS}>Fechar OS</Button>
+              </>
             )}
             <Select value={os.status} onValueChange={(v) => changeStatus.mutate(v)}>
               <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
@@ -177,8 +190,10 @@ function OrderDetail() {
       />
 
       {isClosed && (
-        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-          OS {os.status === "concluida" ? "concluída" : "cancelada"}. Você ainda pode editar dados, adicionar itens ou pagamentos — a OS volta a ficar em andamento automaticamente.
+        <div className={`mb-4 rounded-lg border px-4 py-2 text-sm ${os.status === "concluida_pendente" ? "border-rose-300 bg-rose-50 text-rose-900" : "border-amber-300 bg-amber-50 text-amber-900"}`}>
+          {os.status === "concluida_pendente"
+            ? `OS concluída com pendência financeira. Saldo em aberto: ${brl(balance)}. Registre novos pagamentos para quitar — quando totalmente paga, a OS será marcada como concluída.`
+            : `OS ${os.status === "concluida" ? "concluída" : "cancelada"}. Você ainda pode editar dados, adicionar itens ou pagamentos — a OS volta a ficar em andamento automaticamente.`}
         </div>
       )}
 
@@ -502,11 +517,22 @@ function PaymentDialog({ osId, unitId, osStatus, payment, onClose, suggested }: 
       if (error) throw error;
       if (osStatus === "concluida" || osStatus === "cancelada") {
         await supabase.from("service_orders").update({ status: "em_andamento", data_conclusao: null, fechada_por: null, fechada_com_saldo: false } as never).eq("id", osId);
+      } else if (osStatus === "concluida_pendente") {
+        // If fully paid now, promote to concluida
+        const [{ data: os2 }, { data: pays }] = await Promise.all([
+          supabase.from("service_orders").select("total").eq("id", osId).single(),
+          supabase.from("os_payments").select("valor").eq("os_id", osId),
+        ]);
+        const totalOs = Number(os2?.total ?? 0);
+        const paidOs = (pays ?? []).reduce((s, p) => s + Number((p as { valor: number }).valor), 0);
+        if (totalOs > 0 && paidOs >= totalOs) {
+          await supabase.from("service_orders").update({ status: "concluida", fechada_com_saldo: false } as never).eq("id", osId);
+        }
       }
     },
     onSuccess: () => {
-      const closed = osStatus === "concluida" || osStatus === "cancelada";
-      toast.success(closed ? "Pagamento salvo — OS reaberta" : isEditing ? "Pagamento atualizado" : "Pagamento registrado");
+      const reopened = osStatus === "concluida" || osStatus === "cancelada";
+      toast.success(reopened ? "Pagamento salvo — OS reaberta" : isEditing ? "Pagamento atualizado" : "Pagamento registrado");
       onClose();
       qc.invalidateQueries({ queryKey: ["os-payments", osId] });
       qc.invalidateQueries({ queryKey: ["os", osId] });

@@ -1304,6 +1304,7 @@ export type Database = {
         | "aguardando_aprovacao"
         | "concluida"
         | "cancelada"
+        | "concluida_pendente"
       payment_method:
         | "dinheiro"
         | "pix"
@@ -1463,6 +1464,7 @@ export const Constants = {
         "aguardando_aprovacao",
         "concluida",
         "cancelada",
+        "concluida_pendente",
       ],
       payment_method: [
         "dinheiro",
