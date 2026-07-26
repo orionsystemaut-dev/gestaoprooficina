@@ -31,6 +31,7 @@ function todayISO(offset = 0) {
 
 type Payment = { id: string; metodo: string; valor: number; pago_em: string; observacao: string | null; service_orders: { numero: number; customers: { nome: string } | null } | null };
 type Conta = { id: string; descricao: string; categoria: string | null; fornecedor: string | null; valor: number; vencimento: string; pago_em: string | null; status: string };
+type PendingOS = { id: string; numero: number; status: string; total: number; data_conclusao: string | null; customers: { nome: string; telefone: string | null } | null; os_payments: { valor: number }[] };
 
 function FinancePage() {
   const { activeUnitId } = useActiveUnit();
@@ -79,6 +80,31 @@ function FinancePage() {
       return (data ?? []) as Conta[];
     },
   });
+
+  const { data: pendingOs = [] } = useQuery({
+    queryKey: ["fin-pending-os", activeUnitId],
+    enabled: !!activeUnitId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("service_orders")
+        .select("id, numero, status, total, data_conclusao, customers(nome, telefone), os_payments(valor)")
+        .eq("unit_id", activeUnitId!)
+        .eq("status", "concluida_pendente")
+        .order("data_conclusao", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as PendingOS[];
+    },
+  });
+
+  const pendingRows = useMemo(() => {
+    return pendingOs.map((o) => {
+      const paid = (o.os_payments ?? []).reduce((s, p) => s + Number(p.valor), 0);
+      const total = Number(o.total ?? 0);
+      return { ...o, paid, saldo: Math.max(0, total - paid) };
+    });
+  }, [pendingOs]);
+
+  const pendingTotal = pendingRows.reduce((s, r) => s + r.saldo, 0);
 
   const totals = useMemo(() => {
     const received = payments.reduce((s, p) => s + Number(p.valor), 0);
