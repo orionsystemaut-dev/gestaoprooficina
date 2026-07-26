@@ -172,7 +172,14 @@ function OrderDetail() {
             {isClosed ? (
               <Button variant="default" onClick={() => changeStatus.mutate("em_andamento")}>Reabrir OS</Button>
             ) : (
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={fecharOS}>Fechar OS</Button>
+              <>
+                {balance > 0 && total > 0 && (
+                  <Button variant="outline" className="border-rose-500 text-rose-600 hover:bg-rose-50" onClick={() => changeStatus.mutate("concluida_pendente")}>
+                    Fechar a prazo
+                  </Button>
+                )}
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={fecharOS}>Fechar OS</Button>
+              </>
             )}
             <Select value={os.status} onValueChange={(v) => changeStatus.mutate(v)}>
               <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
