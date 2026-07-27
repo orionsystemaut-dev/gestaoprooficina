@@ -61,7 +61,7 @@ function ServicesPage() {
 
   return (
     <div>
-      <PageHeader title="Serviços" actions={<Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="mr-2 h-4 w-4" />Novo</Button>} />
+      <PageHeader title="Serviços" actions={<Button className="w-full sm:w-auto" onClick={() => { setEditing(null); setOpen(true); }}><Plus className="mr-2 h-4 w-4" />Novo</Button>} />
       <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader><TableRow>
