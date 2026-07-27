@@ -18,38 +18,44 @@ export function SupportButton() {
         return acc;
       }, {});
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    staleTime: 1000 * 60 * 5,
   });
 
   const email = settings?.support_email || "thedinjoaopedro@gmail.com";
   const phone = settings?.support_phone || "5522999211638";
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="pointer-events-none fixed bottom-3 right-3 z-40 sm:bottom-4 sm:right-4">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button size="icon" className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300" title="Fale Conosco">
-            <HelpCircle className="h-6 w-6" />
+          <Button
+            size="icon"
+            variant="outline"
+            aria-label="Fale conosco"
+            title="Fale conosco"
+            className="pointer-events-auto h-9 w-9 rounded-full border-border/60 bg-background/70 text-muted-foreground shadow-sm backdrop-blur-md opacity-60 transition-all duration-200 hover:opacity-100 hover:text-foreground hover:shadow-md focus-visible:opacity-100"
+          >
+            <HelpCircle className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-64 p-4 shadow-xl">
-          <div className="mb-3 font-semibold text-sm">Central de Suporte</div>
-          <p className="text-xs text-muted-foreground mb-4">
+        <PopoverContent align="end" side="top" className="pointer-events-auto w-64 p-4 shadow-xl">
+          <div className="mb-3 text-sm font-semibold">Central de Suporte</div>
+          <p className="mb-4 text-xs text-muted-foreground">
             Como você prefere entrar em contato com nossa equipe?
           </p>
           <div className="flex flex-col gap-2">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start gap-2" 
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2"
               onClick={() => window.open(`https://wa.me/${phone}`, "_blank")}
             >
               <MessageCircle className="h-4 w-4 text-green-600" />
               WhatsApp
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start gap-2"
-              onClick={() => window.location.href = `mailto:${email}`}
+              onClick={() => (window.location.href = `mailto:${email}`)}
             >
               <Mail className="h-4 w-4 text-blue-600" />
               E-mail
