@@ -160,8 +160,8 @@ function VehiclesPage() {
         title="Veículos"
         actions={
           <>
-            <Input placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
-            <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />Novo</Button>
+            <Input placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} className="w-full sm:w-64" />
+            <Button className="w-full sm:w-auto" onClick={openNew}><Plus className="mr-2 h-4 w-4" />Novo</Button>
           </>
         }
       />
@@ -196,10 +196,10 @@ function VehiclesPage() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-2xl overflow-y-auto sm:w-full">
           <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo veículo"}</DialogTitle></DialogHeader>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="col-span-2">
               <Label>Cliente<span className="text-destructive"> *</span></Label>
               <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>

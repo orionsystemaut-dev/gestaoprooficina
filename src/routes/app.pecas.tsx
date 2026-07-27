@@ -96,8 +96,8 @@ function PartsPage() {
         title="Peças"
         actions={
           <>
-            <Input placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
-            <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />Nova peça</Button>
+            <Input placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} className="w-full sm:w-64" />
+            <Button className="w-full sm:w-auto" onClick={openNew}><Plus className="mr-2 h-4 w-4" />Nova peça</Button>
           </>
         }
       />
@@ -131,9 +131,9 @@ function PartsPage() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] overflow-y-auto sm:w-full">
           <DialogHeader><DialogTitle>{editing ? "Editar peça" : "Nova peça"}</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="col-span-2"><Label>Nome *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
             <div><Label>SKU</Label><Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} /></div>
             <div><Label>Preço venda</Label><Input type="number" step="0.01" value={form.preco_venda_padrao} onChange={(e) => setForm({ ...form, preco_venda_padrao: e.target.value })} /></div>
@@ -199,7 +199,7 @@ function BatchesDialog({ part, unitId, onClose }: { part: Part; unitId: string; 
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-3xl overflow-y-auto sm:w-full">
         <DialogHeader><DialogTitle>Lotes de {part.nome}</DialogTitle></DialogHeader>
         <div className="rounded-md border">
           <Table>
@@ -234,7 +234,7 @@ function BatchesDialog({ part, unitId, onClose }: { part: Part; unitId: string; 
           </Table>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 pt-3">
+        <div className="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-2 md:grid-cols-3">
           <div><Label>Lote</Label><Input value={form.lote} onChange={(e) => setForm({ ...form, lote: e.target.value })} /></div>
           <div><Label>Qtd *</Label><Input type="number" step="0.01" value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: e.target.value })} /></div>
           <div><Label>Fornecedor</Label><Input value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} /></div>

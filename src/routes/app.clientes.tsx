@@ -78,8 +78,8 @@ function CustomersPage() {
         title="Clientes"
         actions={
           <>
-            <Input placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
-            <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="mr-2 h-4 w-4" />Novo</Button>
+            <Input placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} className="w-full sm:w-64" />
+            <Button className="w-full sm:w-auto" onClick={() => { setEditing(null); setOpen(true); }}><Plus className="mr-2 h-4 w-4" />Novo</Button>
           </>
         }
       />

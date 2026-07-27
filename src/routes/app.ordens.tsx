@@ -174,13 +174,13 @@ function OrdersPage() {
         actions={
           <>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-52"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{COMMON.all}</SelectItem>
                 {STATUSES.map((s) => <SelectItem key={s} value={s}>{safeLabel(OS_STATUS, s)}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />Nova OS</Button>
+            <Button className="w-full sm:w-auto" onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />Nova OS</Button>
           </>
         }
       />
@@ -218,9 +218,9 @@ function OrdersPage() {
       </div>
 
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-2xl overflow-y-auto sm:w-full">
           <DialogHeader><DialogTitle>Nova Ordem de Serviço</DialogTitle></DialogHeader>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="md:col-span-2">
               <Label>Cliente *</Label>
               <Select value={selCustomer} onValueChange={(v) => { setSelCustomer(v); setSelVehicle(""); }}>

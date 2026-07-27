@@ -34,9 +34,9 @@ export function ResourceDialog<T extends Record<string, unknown>>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-lg overflow-y-auto sm:w-full">
         <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {fields.map((f) => (
             <div key={f.name} className={f.colSpan === 2 ? "col-span-2" : ""}>
               <Label>{f.label}{f.required && <span className="text-destructive"> *</span>}</Label>
