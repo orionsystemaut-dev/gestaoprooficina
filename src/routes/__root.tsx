@@ -100,7 +100,9 @@ function RootComponent() {
           <AuthEvents />
           <Outlet />
           <Toaster richColors position="top-right" />
+          <OrionIA />
         </ActiveUnitProvider>
+
       </AuthProvider>
     </QueryClientProvider>
   );
