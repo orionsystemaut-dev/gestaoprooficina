@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Bot, Loader2, Send, User } from "lucide-react";
 import { askOrionIA } from "@/lib/orion-ia.functions";
+import { useAuth } from "@/hooks/use-auth";
 
 type Message = { id: string; text: string; sender: "ai" | "user" };
 
@@ -13,6 +14,7 @@ const GREETING: Message = {
   text: "Olá! Sou a Órion-IA, sua assistente virtual do OficinaPro. Como posso ajudar você hoje?",
   sender: "ai",
 };
+
 
 export function OrionIA() {
   const [messages, setMessages] = useState<Message[]>([GREETING]);
