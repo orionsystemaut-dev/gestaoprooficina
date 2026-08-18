@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Bot, Loader2, Send, User } from "lucide-react";
 import { askOrionIA } from "@/lib/orion-ia.functions";
+import { useAuth } from "@/hooks/use-auth";
 
 type Message = { id: string; text: string; sender: "ai" | "user" };
 
@@ -14,7 +15,10 @@ const GREETING: Message = {
   sender: "ai",
 };
 
+
 export function OrionIA() {
+  const { session } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -22,8 +26,15 @@ export function OrionIA() {
   const ask = useServerFn(askOrionIA);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isLoading]);
+
+  if (!mounted || !session) return null;
+
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
