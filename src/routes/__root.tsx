@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ActiveUnitProvider } from "@/hooks/use-active-unit";
 import { Toaster } from "@/components/ui/sonner";
+import { OrionIA } from "@/components/orion-ia";
+
 import "@/lib/i18n";
 
 function NotFoundComponent() {
