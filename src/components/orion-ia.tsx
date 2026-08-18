@@ -17,6 +17,8 @@ const GREETING: Message = {
 
 
 export function OrionIA() {
+  const { session } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,8 +26,15 @@ export function OrionIA() {
   const ask = useServerFn(askOrionIA);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isLoading]);
+
+  if (!mounted || !session) return null;
+
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
