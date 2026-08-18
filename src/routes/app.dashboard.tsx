@@ -68,14 +68,15 @@ function Dashboard() {
             <h3 className="font-display text-lg font-semibold">Contas</h3>
             <p className="mt-2 text-sm text-muted-foreground">Aprove, pause ou defina validade de acesso.</p>
           </Link>
-          <Link to="/app/admin/empresas" className="rounded-xl border bg-card p-6 hover:bg-accent/5">
+          <Link to="/app/admin/oficinas" className="rounded-xl border bg-card p-6 hover:bg-accent/5">
             <h3 className="font-display text-lg font-semibold">Empresas</h3>
             <p className="mt-2 text-sm text-muted-foreground">Todas as empresas e unidades no sistema.</p>
           </Link>
-          <Link to="/app/admin/auditoria" className="rounded-xl border bg-card p-6 hover:bg-accent/5">
-            <h3 className="font-display text-lg font-semibold">Auditoria</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Histórico de ações sensíveis.</p>
+          <Link to="/app/admin/financeiro" className="rounded-xl border bg-card p-6 hover:bg-accent/5">
+            <h3 className="font-display text-lg font-semibold">Financeiro</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Assinaturas e faturas das oficinas.</p>
           </Link>
+
         </div>
       </div>
     );
